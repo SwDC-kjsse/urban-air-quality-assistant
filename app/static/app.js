@@ -6,11 +6,38 @@ const state = {
   enabledActions: new Set(),
 };
 
-const SVG_ICONS = {
-  daily_routine: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>',
-  indoor_hack: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
-  sustainable_alt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+const ICON_PATHS = {
+  daily_routine: [
+    ["circle", { cx: "12", cy: "12", r: "9" }],
+    ["polyline", { points: "12 7 12 12 15 15" }],
+  ],
+  indoor_hack: [
+    ["path", { d: "M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" }],
+  ],
+  sustainable_alt: [
+    ["path", { d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" }],
+    ["path", { d: "M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" }],
+  ],
 };
+
+function createCategorySvg(category) {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("width", "16");
+  svg.setAttribute("height", "16");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("aria-hidden", "true");
+  const shapes = ICON_PATHS[category] || ICON_PATHS.daily_routine;
+  for (const [tag, attrs] of shapes) {
+    const el = document.createElementNS(ns, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    svg.appendChild(el);
+  }
+  return svg;
+}
 
 // 1. Aurora canvas
 (function initAurora() {
@@ -163,7 +190,7 @@ function createActionCard(act, idx) {
   const iconWrap = document.createElement("span");
   const catClassMap = { indoor_hack: " indoor", sustainable_alt: " sustain" };
   iconWrap.className = `act-icon-wrap${catClassMap[act.category] || ""}`;
-  iconWrap.innerHTML = SVG_ICONS[act.category] || SVG_ICONS.daily_routine;
+  iconWrap.appendChild(createCategorySvg(act.category));
 
   const toggleLabel = document.createElement("label");
   toggleLabel.className = "toggle-switch";
@@ -349,6 +376,11 @@ document.querySelectorAll(".tab-btn").forEach((tab) => {
 
 document.getElementById("contrast-toggle").addEventListener("click", (e) => {
   const active = document.body.classList.toggle("high-contrast");
+  e.currentTarget.setAttribute("aria-pressed", String(active));
+});
+
+document.getElementById("text-size-toggle").addEventListener("click", (e) => {
+  const active = document.body.classList.toggle("large-text");
   e.currentTarget.setAttribute("aria-pressed", String(active));
 });
 

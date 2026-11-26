@@ -20,6 +20,15 @@ body.high-contrast {
   --muted: #e2e8f0;
 }
 
+body.large-text {
+  font-size: 18px;
+}
+body.large-text .action-steps,
+body.large-text .ai-narrative,
+body.large-text .vent-line {
+  font-size: 0.98rem;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
