@@ -5,35 +5,37 @@ from app.config import settings
 from app.models.schemas import ActionItem, AirQualitySnapshot, HouseholdProfile, ImpactSummary
 
 
-async def _call_gemini(prompt: str) -> str | None:
+async def _call_gemini(prompt: str) -> tuple[str, str] | None:
     """Invoke Gemini generateContent REST API if an API key is configured."""
     api_key = settings.gemini_api_key
     if not api_key:
         return None
 
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{settings.gemini_model}:generateContent"
-    )
+    models = list(dict.fromkeys([settings.gemini_model, "gemini-2.5-flash", "gemini-2.0-flash"]))
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 450},
     }
+    transport = httpx.AsyncHTTPTransport(local_address="0.0.0.0")
     try:
-        async with httpx.AsyncClient(timeout=settings.request_timeout_s) as client:
-            resp = await client.post(
-                url,
-                headers={"Content-Type": "application/json", "X-goog-api-key": api_key},
-                json=payload,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            candidates = data.get("candidates") or []
-            if candidates:
-                parts = candidates[0].get("content", {}).get("parts") or []
-                text = "".join(p.get("text", "") for p in parts).strip()
-                if text:
-                    return text
+        async with httpx.AsyncClient(transport=transport, timeout=settings.request_timeout_s) as client:
+            for model in models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                resp = await client.post(
+                    url,
+                    headers={"Content-Type": "application/json", "X-goog-api-key": api_key},
+                    json=payload,
+                )
+                if resp.status_code in (429, 503):
+                    continue
+                resp.raise_for_status()
+                data = resp.json()
+                candidates = data.get("candidates") or []
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts") or []
+                    text = "".join(p.get("text", "") for p in parts).strip()
+                    if text:
+                        return text, model
     except (httpx.HTTPError, ValueError, KeyError):
         return None
     return None
@@ -86,9 +88,10 @@ async def generate_plan_narrative(
         f"CO2 saved {impact.weekly_co2_saved_kg} kg/week.\n"
         f"Actions:\n{action_lines}"
     )
-    ai_text = await _call_gemini(prompt)
-    if ai_text:
-        return ai_text, f"Google Gemini ({settings.gemini_model})"
+    result = await _call_gemini(prompt)
+    if result:
+        ai_text, used_model = result
+        return ai_text, f"Google Gemini ({used_model})"
     return _offline_narrative(profile, aq, actions, impact), "Context-Engine Fallback (Add GEMINI_API_KEY for live LLM)"
 
 
@@ -108,9 +111,10 @@ async def answer_followup(
         f"commute={profile.commute_mode}, budget={profile.budget_tier}.\n"
         f"User question: {question}"
     )
-    ai_text = await _call_gemini(prompt)
-    if ai_text:
-        return ai_text, f"Google Gemini ({settings.gemini_model})"
+    result = await _call_gemini(prompt)
+    if result:
+        ai_text, used_model = result
+        return ai_text, f"Google Gemini ({used_model})"
 
     q_low = question.lower()
     if any(w in q_low for w in ("window", "open", "ventilat", "air out")):
