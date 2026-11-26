@@ -12,7 +12,7 @@ class Settings:
     """Immutable runtime settings."""
 
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip() or "gemini-2.5-flash"
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
     request_timeout_s: float = 12.0
     cache_ttl_s: int = 600
 
