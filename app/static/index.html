@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AeroShield · Urban Air Quality Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- React Bits-inspired Aurora + DotGrid ambient background -->
+  <div class="bg-stage" aria-hidden="true">
+    <canvas id="aurora-canvas"></canvas>
+    <div class="dot-grid"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <span class="brand-name">AeroShield</span>
+          <span class="brand-sub">Urban Air Quality Assistant</span>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <button type="button" id="contrast-toggle" class="ghost-btn" aria-pressed="false">
+          High Contrast
+        </button>
+        <span class="status-pill" id="api-status">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          Live AQI + GenAI Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="shell">
+    <!-- Editorial Hero -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-tag">WINTER SMOG &amp; URBAN POLLUTION NAVIGATOR</div>
+      <h1 id="hero-heading" class="blur-reveal">
+        Breathe smarter through <span class="gradient-text">winter smog.</span>
+      </h1>
+      <p class="hero-lead">
+        Tailored daily routines, indoor air quality hacks, and low-emission alternatives—grounded in live AQI,
+        your household profile, and quantified health &amp; CO₂e impact.
+      </p>
+    </section>
+
+    <!-- Main 2-Column Workspace -->
+    <div class="workspace-grid">
+      <!-- Left Rail: Context Form -->
+      <aside class="spotlight-card panel form-panel" aria-label="Household context profile">
+        <div class="panel-head">
+          <h2>Household Context</h2>
+          <span class="mono-tag">STEP 01</span>
+        </div>
+
+        <form id="profile-form" novalidate>
+          <div class="field-group">
+            <label for="city">City or Neighborhood</label>
+            <div class="input-row">
+              <input id="city" name="city" type="text" value="Delhi" required minlength="2" maxlength="80" autocomplete="address-level2" />
+              <button type="button" class="chip-btn" data-city="Delhi">Delhi</button>
+              <button type="button" class="chip-btn" data-city="Mumbai">Mumbai</button>
+              <button type="button" class="chip-btn" data-city="Kolkata">Kolkata</button>
+            </div>
+          </div>
+
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="household_size">Household Size</label>
+              <input id="household_size" name="household_size" type="number" min="1" max="15" value="4" />
+            </div>
+            <div class="field-group">
+              <label for="manual_aqi">Simulate AQI (optional)</label>
+              <input id="manual_aqi" name="manual_aqi" type="number" min="10" max="500" placeholder="Live auto" />
+            </div>
+          </div>
+
+          <fieldset class="field-group checks-group">
+            <legend>Household Sensitivities</legend>
+            <label class="check-pill">
+              <input type="checkbox" id="has_children" checked />
+              <span>Children</span>
+            </label>
+            <label class="check-pill">
+              <input type="checkbox" id="has_elderly" />
+              <span>Elderly</span>
+            </label>
+            <label class="check-pill">
+              <input type="checkbox" id="has_respiratory" checked />
+              <span>Asthma / Respiratory</span>
+            </label>
+          </fieldset>
+
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="commute_mode">Primary Commute</label>
+              <select id="commute_mode" name="commute_mode">
+                <option value="car" selected>Personal Car</option>
+                <option value="two_wheeler">Two-Wheeler</option>
+                <option value="public_transit">Metro / Bus</option>
+                <option value="walk_cycle">Walk / Cycle</option>
+                <option value="remote">Work from Home</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="commute_km">Daily Distance (km)</label>
+              <input id="commute_km" name="commute_km" type="number" min="0" max="150" value="18" />
+            </div>
+          </div>
+
+          <div class="field-grid-2">
+            <div class="field-group">
+              <label for="home_type">Home Type</label>
+              <select id="home_type" name="home_type">
+                <option value="apartment" selected>Apartment</option>
+                <option value="independent_house">Independent House</option>
+                <option value="shared_housing">Shared Housing</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="cooking_fuel">Cooking Fuel</label>
+              <select id="cooking_fuel" name="cooking_fuel">
+                <option value="lpg_gas" selected>LPG / Piped Gas</option>
+                <option value="electric_induction">Electric / Induction</option>
+                <option value="biomass_solid">Solid Fuel / Biomass</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="budget_tier">Action Budget Tier</label>
+            <div class="segmented" role="radiogroup" aria-label="Budget Tier">
+              <button type="button" class="seg-btn" data-budget="zero_cost">Zero Cost</button>
+              <button type="button" class="seg-btn active" data-budget="low_budget">Low Budget</button>
+              <button type="button" class="seg-btn" data-budget="moderate">Moderate</button>
+            </div>
+            <input type="hidden" id="budget_tier" value="low_budget" />
+          </div>
+
+          <button type="submit" id="generate-btn" class="primary-btn">
+            <span>Generate Action Plan</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </button>
+          <p id="form-error" class="error-text" role="alert" aria-live="assertive"></p>
+        </form>
+      </aside>
+
+      <!-- Right Stage: Live Telemetry, Impact & Recommendations -->
+      <section class="results-stage" aria-live="polite" aria-label="Air quality plan and impact">
+        <!-- Top Telemetry Row -->
+        <div class="telemetry-row">
+          <article class="spotlight-card metric-card">
+            <div class="metric-label">LIVE AIR QUALITY</div>
+            <div class="metric-value-row">
+              <span class="metric-big" id="aqi-value">--</span>
+              <span class="severity-badge" id="aqi-tier">Loading</span>
+            </div>
+            <div class="metric-meta" id="aqi-meta">PM2.5 -- µg/m³ · --</div>
+          </article>
+
+          <article class="spotlight-card metric-card">
+            <div class="metric-label">HOUSEHOLD RISK</div>
+            <div class="metric-value-row">
+              <span class="metric-big" id="risk-before">--</span>
+              <span class="arrow-sep" aria-hidden="true">→</span>
+              <span class="metric-big accent-emerald" id="risk-after">--</span>
+            </div>
+            <div class="metric-meta" id="risk-meta">Baseline vs. after adopting plan</div>
+          </article>
+
+          <article class="spotlight-card metric-card">
+            <div class="metric-label">DIRECT IMPACT</div>
+            <div class="metric-value-row">
+              <span class="metric-big accent-cyan" id="pm-drop">--%</span>
+              <span class="metric-unit">PM2.5 cut</span>
+            </div>
+            <div class="metric-meta" id="co2-meta">-- kg CO₂e/week · -- trees/yr</div>
+          </article>
+        </div>
+
+        <!-- GenAI Advisory Card -->
+        <article class="spotlight-card panel ai-panel">
+          <div class="panel-head">
+            <div>
+              <span class="mono-tag">GENAI BRIEFING</span>
+              <h2>Personalized Strategy &amp; Ventilation Window</h2>
+            </div>
+            <span class="provider-pill" id="ai-provider">--</span>
+          </div>
+          <p id="ai-narrative" class="ai-narrative">
+            Calculating live air quality and household impact...
+          </p>
+          <div class="vent-banner">
+            <span class="vent-label">Best Window</span>
+            <span id="vent-window" class="vent-value">--</span>
+          </div>
+        </article>
+
+        <!-- Category Filter Tabs + Interactive What-If Simulator -->
+        <div class="actions-header">
+          <div class="pill-tabs" role="tablist" aria-label="Filter recommendations">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-filter="all">All Actions</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-filter="daily_routine">Daily Routines</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-filter="indoor_hack">Indoor Hacks</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-filter="sustainable_alt">Sustainable</button>
+          </div>
+          <span class="whatif-hint">Toggle any card to simulate impact</span>
+        </div>
+
+        <div id="actions-grid" class="actions-grid"></div>
+
+        <!-- Follow-up Q&A Assistant -->
+        <article class="spotlight-card panel chat-panel">
+          <div class="panel-head">
+            <div>
+              <span class="mono-tag">ASK ASSISTANT</span>
+              <h2>Context-Aware Follow-Up Q&amp;A</h2>
+            </div>
+          </div>
+          <div class="quick-prompts">
+            <button type="button" class="prompt-chip" data-q="When is it safe to open windows today?">Safe window timing?</button>
+            <button type="button" class="prompt-chip" data-q="How should kids commute to school during severe smog?">Kids school commute?</button>
+            <button type="button" class="prompt-chip" data-q="How can I lower indoor PM2.5 on a tight budget?">Budget indoor hacks?</button>
+          </div>
+          <form id="chat-form" class="chat-form">
+            <label for="chat-input" class="sr-only">Ask a question about air quality or routines</label>
+            <input id="chat-input" type="text" minlength="3" maxlength="500" placeholder="Ask about masks, cooking exhaust, DIY filters, or commute swaps..." required />
+            <button type="submit" id="chat-btn" class="secondary-btn">Ask</button>
+          </form>
+          <div id="chat-answer-wrap" class="chat-answer-wrap hidden" aria-live="polite">
+            <div class="chat-answer-meta" id="chat-provider"></div>
+            <p id="chat-answer" class="chat-answer"></p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>AeroShield · Challenge 6: Urban Air Quality Assistant · Built with FastAPI &amp; Google Gemini</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
