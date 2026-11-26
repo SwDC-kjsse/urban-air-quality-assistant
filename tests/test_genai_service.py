@@ -1,4 +1,5 @@
 """Unit tests for GenAI service offline fallback and topic routing."""
+
 import asyncio
 
 from app.models.schemas import AirQualitySnapshot, HouseholdProfile

@@ -1,4 +1,5 @@
 """Pydantic schemas for requests, air quality snapshots, and AI action plans."""
+
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator

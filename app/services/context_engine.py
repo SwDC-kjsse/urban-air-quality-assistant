@@ -1,4 +1,5 @@
 """Deterministic decision engine for household risk scoring, tailored actions, and impact math."""
+
 from app.models.schemas import (
     ActionItem,
     AirQualitySnapshot,

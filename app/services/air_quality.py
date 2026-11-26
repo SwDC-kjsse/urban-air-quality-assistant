@@ -1,4 +1,5 @@
 """Live air quality lookup via Open-Meteo with TTL caching and offline winter-smog fallback."""
+
 import logging
 import time
 

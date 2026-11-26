@@ -1,4 +1,5 @@
 """FastAPI entry point for the Urban Air Quality Assistant."""
+
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 

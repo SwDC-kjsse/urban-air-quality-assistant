@@ -1,4 +1,5 @@
 """Google Gemini GenAI integration with deterministic offline fallback."""
+
 import logging
 
 import httpx
