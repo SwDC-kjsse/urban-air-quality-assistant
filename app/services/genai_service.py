@@ -17,22 +17,22 @@ _FALLBACK_PROVIDER = "Context-Engine Fallback (Add GEMINI_API_KEY for live LLM)"
 
 _FOLLOWUP_TOPICS: tuple[tuple[tuple[str, ...], str], ...] = (
     (
+        ("purifier", "filter", "fan", "indoors", "cook"),
+        "For indoor air quality: run a True HEPA or DIY MERV-13 Corsi-Rosenthal box-fan "
+        "filter in the main bedroom (cuts indoor PM2.5 by 48–60%), keep pot lids on while "
+        "cooking, and run the kitchen exhaust for 15 minutes afterward.",
+    ),
+    (
         ("window", "open", "ventilat", "air out"),
         "At {city}'s AQI {aqi} ({tier}), your safest ventilation window is: {window}. "
         "Outside that window, keep windows latched and wet-mop floors so fine PM2.5 "
         "stays outside—reducing indoor particulate buildup by ~24%.",
     ),
     (
-        ("school", "kid", "child", "walk", "run", "exercise", "outdoor"),
+        ("school", "kid", "child", "walk", "jog", "exercise", "outdoor"),
         "With AQI at {aqi} (PM2.5 {pm25} µg/m³), avoid vigorous outdoor exercise during "
         "morning/evening inversions. Move errands to 13:00–15:30, use tree-lined side "
         "streets, and wear an N95/FFP2 mask if AQI > 150 to cut inhaled PM2.5 by >80%.",
-    ),
-    (
-        ("purifier", "filter", "fan", "indoors", "cook"),
-        "For indoor air quality: run a True HEPA or DIY MERV-13 Corsi-Rosenthal box-fan "
-        "filter in the main bedroom (cuts indoor PM2.5 by 48–60%), keep pot lids on while "
-        "cooking, and run the kitchen exhaust for 15 minutes afterward.",
     ),
 )
 
