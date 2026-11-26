@@ -152,6 +152,76 @@ function updateImpactVisuals() {
   animateCount(document.getElementById("trees-yr"), trees, "", 1);
 }
 
+function createActionCard(act, idx) {
+  const card = document.createElement("article");
+  const isEnabled = state.enabledActions.has(idx);
+  card.className = `spotlight-card action-card${isEnabled ? "" : " inactive"}`;
+
+  const top = document.createElement("div");
+  top.className = "action-top";
+
+  const iconWrap = document.createElement("span");
+  const catClassMap = { indoor_hack: " indoor", sustainable_alt: " sustain" };
+  iconWrap.className = `act-icon-wrap${catClassMap[act.category] || ""}`;
+  iconWrap.innerHTML = SVG_ICONS[act.category] || SVG_ICONS.daily_routine;
+
+  const toggleLabel = document.createElement("label");
+  toggleLabel.className = "toggle-switch";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = isEnabled;
+  checkbox.setAttribute("aria-label", `Adopt ${act.title}`);
+  const toggleTxt = document.createElement("span");
+  toggleTxt.textContent = isEnabled ? "On" : "Off";
+  checkbox.addEventListener("change", () => {
+    if (checkbox.checked) state.enabledActions.add(idx);
+    else state.enabledActions.delete(idx);
+    card.classList.toggle("inactive", !checkbox.checked);
+    toggleTxt.textContent = checkbox.checked ? "On" : "Off";
+    updateImpactVisuals();
+  });
+  toggleLabel.append(checkbox, toggleTxt);
+  top.append(iconWrap, toggleLabel);
+
+  const title = document.createElement("h3");
+  title.className = "action-title";
+  title.textContent = act.title;
+
+  const steps = document.createElement("p");
+  steps.className = "action-steps";
+  steps.textContent = act.steps.split(";")[0].replace(/\.+$/, "") + ".";
+
+  const meter = document.createElement("div");
+  meter.className = "act-meter";
+
+  const mHead = document.createElement("div");
+  mHead.className = "act-meter-head";
+  const lbl = document.createElement("span");
+  lbl.textContent = "PM2.5 Cut";
+  const pct = document.createElement("span");
+  pct.textContent = `-${act.pm25_reduction_pct}%`;
+  mHead.append(lbl, pct);
+
+  const track = document.createElement("div");
+  track.className = "act-track";
+  const fill = document.createElement("div");
+  fill.className = "act-fill";
+  fill.style.width = `${Math.min(100, act.pm25_reduction_pct * 1.5)}%`;
+  track.appendChild(fill);
+
+  const chips = document.createElement("div");
+  chips.className = "act-chips";
+  const c1 = document.createElement("span");
+  c1.textContent = `${act.weekly_co2_saved_kg.toFixed(1)} kg CO₂/wk`;
+  const c2 = document.createElement("span");
+  c2.textContent = act.cost_level;
+  chips.append(c1, c2);
+
+  meter.append(mHead, track, chips);
+  card.append(top, title, steps, meter);
+  return card;
+}
+
 // 7. Render visual action cards (concise, scannable)
 function renderActions() {
   const grid = document.getElementById("actions-grid");
@@ -159,76 +229,9 @@ function renderActions() {
   if (!state.plan) return;
 
   state.plan.actions.forEach((act, idx) => {
-    if (state.activeFilter !== "all" && act.category !== state.activeFilter) return;
-
-    const card = document.createElement("article");
-    const isEnabled = state.enabledActions.has(idx);
-    card.className = `spotlight-card action-card${isEnabled ? "" : " inactive"}`;
-
-    const top = document.createElement("div");
-    top.className = "action-top";
-
-    const iconWrap = document.createElement("span");
-    const cls = act.category === "indoor_hack" ? " indoor" : act.category === "sustainable_alt" ? " sustain" : "";
-    iconWrap.className = `act-icon-wrap${cls}`;
-    iconWrap.innerHTML = SVG_ICONS[act.category] || SVG_ICONS.daily_routine;
-
-    const toggleLabel = document.createElement("label");
-    toggleLabel.className = "toggle-switch";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = isEnabled;
-    checkbox.setAttribute("aria-label", `Adopt ${act.title}`);
-    const toggleTxt = document.createElement("span");
-    toggleTxt.textContent = isEnabled ? "On" : "Off";
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) state.enabledActions.add(idx);
-      else state.enabledActions.delete(idx);
-      card.classList.toggle("inactive", !checkbox.checked);
-      toggleTxt.textContent = checkbox.checked ? "On" : "Off";
-      updateImpactVisuals();
-    });
-    toggleLabel.append(checkbox, toggleTxt);
-    top.append(iconWrap, toggleLabel);
-
-    const title = document.createElement("h3");
-    title.className = "action-title";
-    title.textContent = act.title;
-
-    // Concise first sentence only for fast scannability
-    const steps = document.createElement("p");
-    steps.className = "action-steps";
-    steps.textContent = act.steps.split(";")[0].replace(/\.+$/, "") + ".";
-
-    const meter = document.createElement("div");
-    meter.className = "act-meter";
-
-    const mHead = document.createElement("div");
-    mHead.className = "act-meter-head";
-    const lbl = document.createElement("span");
-    lbl.textContent = "PM2.5 Cut";
-    const pct = document.createElement("span");
-    pct.textContent = `-${act.pm25_reduction_pct}%`;
-    mHead.append(lbl, pct);
-
-    const track = document.createElement("div");
-    track.className = "act-track";
-    const fill = document.createElement("div");
-    fill.className = "act-fill";
-    fill.style.width = `${Math.min(100, act.pm25_reduction_pct * 1.5)}%`;
-    track.appendChild(fill);
-
-    const chips = document.createElement("div");
-    chips.className = "act-chips";
-    const c1 = document.createElement("span");
-    c1.textContent = `${act.weekly_co2_saved_kg.toFixed(1)} kg CO₂/wk`;
-    const c2 = document.createElement("span");
-    c2.textContent = act.cost_level;
-    chips.append(c1, c2);
-
-    meter.append(mHead, track, chips);
-    card.append(top, title, steps, meter);
-    grid.appendChild(card);
+    if (state.activeFilter === "all" || act.category === state.activeFilter) {
+      grid.appendChild(createActionCard(act, idx));
+    }
   });
 }
 

@@ -1,6 +1,6 @@
 """Application configuration loaded from environment variables."""
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 from dotenv import load_dotenv
 
@@ -12,7 +12,9 @@ class Settings:
     """Immutable runtime settings."""
 
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
+    gemini_model: str = (
+        os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
+    )
     request_timeout_s: float = 30.0
     cache_ttl_s: int = 600
 

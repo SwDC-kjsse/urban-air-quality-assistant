@@ -1,6 +1,8 @@
 """FastAPI entry point for the Urban Air Quality Assistant."""
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from fastapi import FastAPI, Request
+
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -23,13 +25,19 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 app = FastAPI(
     title="Urban Air Quality Assistant",
-    description="GenAI-powered winter smog & urban air pollution navigator for families and communities.",
+    description=(
+        "GenAI-powered winter smog and urban air pollution navigator "
+        "for families and communities."
+    ),
     version="1.0.0",
 )
 
 
 @app.middleware("http")
-async def add_security_headers(request: Request, call_next):
+async def add_security_headers(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
     """Attach standard security headers to all HTTP responses."""
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -42,25 +50,28 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @app.get("/", include_in_schema=False)
-async def index():
+async def index() -> FileResponse:
     """Serve the accessible web interface."""
     return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/api/health")
-async def health():
+async def health() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "ok", "service": "urban-air-quality-assistant"}
 
 
 @app.get("/api/air-quality", response_model=AirQualitySnapshot)
-async def get_air_quality(city: str = "Delhi", manual_aqi: int | None = None):
+async def get_air_quality(
+    city: str = Query(default="Delhi", min_length=2, max_length=80),
+    manual_aqi: int | None = Query(default=None, ge=10, le=500),
+) -> AirQualitySnapshot:
     """Fetch current air quality snapshot for a given city."""
     return await fetch_air_quality(city=city, manual_aqi_override=manual_aqi)
 
 
 @app.post("/api/plan", response_model=PlanResponse)
-async def create_action_plan(profile: HouseholdProfile):
+async def create_action_plan(profile: HouseholdProfile) -> PlanResponse:
     """Generate a tailored winter smog action plan with quantified impact."""
     aq = await fetch_air_quality(profile.city, profile.manual_aqi_override)
     baseline_risk, risk_level, risk_explanation = compute_baseline_risk(profile, aq)
@@ -80,7 +91,7 @@ async def create_action_plan(profile: HouseholdProfile):
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_with_assistant(payload: ChatRequest):
+async def chat_with_assistant(payload: ChatRequest) -> ChatResponse:
     """Answer a follow-up question grounded in the household's location and lifestyle."""
     aq = await fetch_air_quality(payload.profile.city, payload.profile.manual_aqi_override)
     answer, provider = await answer_followup(payload.profile, aq, payload.question)

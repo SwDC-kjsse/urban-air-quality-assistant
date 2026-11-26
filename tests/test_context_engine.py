@@ -34,8 +34,18 @@ def test_classify_aqi_tiers():
 
 def test_vulnerability_increases_risk_score():
     aq = _sample_aq(240)
-    low_vuln = HouseholdProfile(city="Delhi", has_children=False, has_elderly=False, has_respiratory_condition=False)
-    high_vuln = HouseholdProfile(city="Delhi", has_children=True, has_elderly=True, has_respiratory_condition=True)
+    low_vuln = HouseholdProfile(
+        city="Delhi",
+        has_children=False,
+        has_elderly=False,
+        has_respiratory_condition=False,
+    )
+    high_vuln = HouseholdProfile(
+        city="Delhi",
+        has_children=True,
+        has_elderly=True,
+        has_respiratory_condition=True,
+    )
 
     s_low, _, _ = compute_baseline_risk(low_vuln, aq)
     s_high, level_high, _ = compute_baseline_risk(high_vuln, aq)

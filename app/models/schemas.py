@@ -1,7 +1,7 @@
 """Pydantic schemas for requests, air quality snapshots, and AI action plans."""
 from typing import Literal
-from pydantic import BaseModel, Field, field_validator
 
+from pydantic import BaseModel, Field, field_validator
 
 CommuteMode = Literal["car", "two_wheeler", "public_transit", "walk_cycle", "remote"]
 HomeType = Literal["apartment", "independent_house", "shared_housing"]
