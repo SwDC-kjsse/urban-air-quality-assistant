@@ -11,8 +11,9 @@ __pycache__/
 .venv/
 venv/
 
-# OS / IDE
+# OS / IDE / Deploy
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+.vercel/
