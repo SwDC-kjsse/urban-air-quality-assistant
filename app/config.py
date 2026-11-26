@@ -13,7 +13,7 @@ class Settings:
 
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip() or "gemini-flash-latest"
-    request_timeout_s: float = 12.0
+    request_timeout_s: float = 30.0
     cache_ttl_s: int = 600
 
 
