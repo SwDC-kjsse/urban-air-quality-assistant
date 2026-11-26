@@ -11,7 +11,11 @@ async def _call_gemini(prompt: str) -> tuple[str, str] | None:
     if not api_key:
         return None
 
-    models = list(dict.fromkeys([settings.gemini_model, "gemini-2.5-flash", "gemini-2.0-flash"]))
+    models = list(
+        dict.fromkeys(
+            [settings.gemini_model, "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3-flash-preview"]
+        )
+    )
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 450},
@@ -26,7 +30,7 @@ async def _call_gemini(prompt: str) -> tuple[str, str] | None:
                     headers={"Content-Type": "application/json", "X-goog-api-key": api_key},
                     json=payload,
                 )
-                if resp.status_code in (429, 503):
+                if resp.status_code in (404, 429, 503):
                     continue
                 resp.raise_for_status()
                 data = resp.json()
