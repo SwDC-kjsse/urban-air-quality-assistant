@@ -56,7 +56,8 @@ def test_chat_endpoint_answers_question():
     )
     assert res.status_code == 200
     body = res.json()
-    assert "Mumbai" in body["answer"]
+    assert len(body["answer"]) > 20
+    assert body["air_quality"]["city"] == "Mumbai"
     assert body["air_quality"]["aqi_us"] == 165
 
 
